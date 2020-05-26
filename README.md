@@ -15,9 +15,9 @@
 
 ![res](./image/res.bmp)
 
-![res2](/Users/tang/Desktop/SR/image/res2.png)
+![res2](./image/res2.png)
 
-![res3](/Users/tang/Desktop/SR/image/res3.png)
+![res3](./image/res3.png)
 
 
 
