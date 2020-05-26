@@ -23,7 +23,7 @@ from model import SRCNN
 from test import psnr1
 
 # num = 21884
-EPOCHS = 6
+EPOCHS = 20
 INIT_LR = 1e-4
 BS = 128
 input_size = 33
@@ -58,14 +58,14 @@ def train_batch(aug, trainX, trainY,load_weight=True):
         print("[INFO] import model weights...")
         model.load_weights('my_model_weights.h5')
     try:
-        # opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
-        opt = Adam(lr=INIT_LR)
+        opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
+        # opt = Adam(lr=INIT_LR)
         model.compile(loss="mean_squared_error", optimizer=opt, metrics=[psnr1])
         current_time = datetime.now().strftime("%Y%m%d-%H:%M")
         filepath = 'train_model/model-ep{epoch:03d}-loss{loss:.3f}-psnr{psnr1:.3f}-'+ current_time + '.h5'
 
         checkpoint = ModelCheckpoint(filepath, monitor='psnr1', verbose=1, save_best_only=True,
-                                     mode='max', period=1)
+                                     mode='max', period=2)
         print("[INFO] training network...")
         H = model.fit_generator(aug.flow(trainX, trainY, batch_size=BS),
                                 steps_per_epoch=len(trainX) // BS, epochs=EPOCHS,callbacks=[checkpoint])
@@ -84,7 +84,7 @@ def train_batch(aug, trainX, trainY,load_weight=True):
         # plt.plot(np.arange(0, N), H.history["acc"], label="train_acc")
         plt.plot(np.arange(0, N), H.history["psnr1"], label="psnr")
         plt.xlabel("Epoch #")
-        plt.ylabel("Loss/Accuracy")
+        plt.ylabel("psnr")
         plt.legend(loc="upper left")
         plt.savefig("plot.png")
 
@@ -107,10 +107,14 @@ def train(trainX,trainY):
 
 
 if __name__ == '__main__':
-    sess = tf.Session()
+    os.environ["CUDA_VISIBLE_DEVICES"] = '1，2，3，4，5，6，7，8'
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
+    # sess = tf.Session()
     K.set_session(sess)
     train_file_path = "./train_data"
     trainX, trainY = load_data(train_file_path)
     aug = ImageDataGenerator()
-    train_batch(aug, trainX, trainY,)
+    train_batch(aug, trainX, trainY,False)
     # train(trainX,trainY)
